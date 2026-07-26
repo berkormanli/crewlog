@@ -6,8 +6,8 @@
 #   - backend    (Fastify on :4000, internal-only)
 #   - frontend   (nginx on :80, reverse-proxies /api/* to backend)
 #
-# Networking: only the frontend exposes a port to the host/Coolify proxy.
-# The backend is reachable from the frontend over the internal crewlog_net.
+# Networking is intentionally left to Compose/Coolify. The frontend and
+# backend communicate by service name on the deployment network.
 #
 # Volumes:
 #   - crewlog_pgdata  → Postgres data
@@ -33,8 +33,6 @@ services:
       interval: 10s
       timeout: 3s
       retries: 10
-    networks:
-      - crewlog_net
 
   backend:
     build:
@@ -79,10 +77,8 @@ services:
       timeout: 3s
       retries: 3
       start_period: 15s
-    networks:
-      - crewlog_net
     # Backend is internal-only — only the frontend (and the internal docker
-    # network) can reach it. If you need to expose it directly (e.g. for
+    # deployment network) can reach it. If you need to expose it directly (e.g. for
     # smoke tests), add a `ports:` mapping here.
     expose:
       - "4000"
@@ -111,13 +107,7 @@ services:
       # inside an `upstream` block rejects URLs).
       BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:4000}
       VITE_API_URL: ${VITE_API_URL-}
-    networks:
-      - crewlog_net
 
 volumes:
   crewlog_pgdata:
   crewlog_uploads:
-
-networks:
-  crewlog_net:
-    driver: bridge
