@@ -1,12 +1,22 @@
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/auth';
 
-// BASE is the *origin* the SPA calls the API at — the path prefix is
-// already part of every call site (e.g. `/api/v1/auth/login`). Setting
-// VITE_API_URL to a path like `/api` would produce `/api/api/v1/auth/login`
-// and miss the backend. Leave it empty in production so the bundle uses
-// first-party-relative URLs and nginx's `/api/` location can proxy them.
-const BASE = import.meta.env.VITE_API_URL || '';
+// BASE is the origin the SPA calls the API at. The path prefix is already
+// part of every call site (e.g. `/api/v1/auth/login`), so strip accidental
+// trailing API prefixes from VITE_API_URL before building request URLs.
+export function normalizeApiBase(raw: string | undefined): string {
+  const base = (raw ?? '').trim().replace(/\/+$/, '');
+  if (!base) return '';
+  if (base === '/api' || base === '/api/v1') return '';
+  return base.replace(/\/api(?:\/v1)?$/, '');
+}
+
+const BASE = normalizeApiBase(import.meta.env.VITE_API_URL);
+
+export function apiUrl(path: string): string {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${BASE}${normalizedPath}`;
+}
 
 export class ApiException extends Error {
   status: number;
@@ -30,7 +40,7 @@ async function doRefresh(): Promise<string | null> {
       const refresh = useAuthStore.getState().refresh;
       if (!refresh) return null;
       try {
-        const resp = await fetch(`${BASE}/api/v1/auth/refresh`, {
+        const resp = await fetch(apiUrl('/api/v1/auth/refresh'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken: refresh }),
@@ -76,7 +86,7 @@ async function request<T>(method: string, path: string, init: RequestInitWithBod
     // new access token we should use.
     const currentAccess = useAuthStore.getState().access;
     finalHeaders['Authorization'] = `Bearer ${currentAccess ?? ''}`;
-    resp = await fetch(`${BASE}${path}`, {
+    resp = await fetch(apiUrl(path), {
       method,
       ...rest,
       headers: finalHeaders,

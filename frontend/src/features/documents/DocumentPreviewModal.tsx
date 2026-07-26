@@ -3,6 +3,7 @@ import { Download, ExternalLink, FileText, Loader2 } from 'lucide-react';
 import { Modal } from '@/components/Modal';
 import { formatBytes, fromNow } from '@/lib/format';
 import ReactMarkdown from 'react-markdown';
+import { apiUrl } from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import type { DocShape } from '@/types';
 
@@ -26,7 +27,7 @@ export function DocumentPreviewModal({
 }) {
   const access = useAuthStore((s) => s.access);
   const path = `/api/v1/documents/${doc.id}/download`;
-  const url = `${import.meta.env.VITE_API_URL || ''}${path}`;
+  const url = apiUrl(path);
 
   const mime = (doc.mimeType || '').toLowerCase();
   const name = doc.name.toLowerCase();

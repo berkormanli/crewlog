@@ -31,7 +31,7 @@ import { PageContainer, PageHeader } from '@/components/Avatar';
 import { Modal } from '@/components/Modal';
 import { DocumentPreviewModal } from '@/features/documents/DocumentPreviewModal';
 import { formatBytes } from '@/lib/format';
-import { apiBase } from '@/api/client';
+import { apiUrl } from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { canManage } from '@/lib/rbac';
 import { useForm } from 'react-hook-form';
@@ -667,7 +667,7 @@ function FileRow({
           </button>
         ) : (
           <a
-            href={`${apiBase}/api/v1/documents/${doc.id}/download`}
+            href={apiUrl(`/api/v1/documents/${doc.id}/download`)}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-slate-800 hover:text-brand-700 hover:underline truncate min-w-0 flex-1"
@@ -695,7 +695,7 @@ function FileRow({
             </button>
           )}
           <a
-            href={`${apiBase}/api/v1/documents/${doc.id}/download`}
+            href={apiUrl(`/api/v1/documents/${doc.id}/download`)}
             download={doc.name}
             title="Download"
             className="p-1 rounded text-slate-400 hover:text-brand-600 hover:bg-brand-50"

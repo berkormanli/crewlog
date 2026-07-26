@@ -7,7 +7,7 @@ import { Spinner } from '@/components/Spinner';
 import { EmptyState } from '@/components/EmptyState';
 import type { TeamSummary } from '@/types';
 import { todayISODate, formatDate } from '@/lib/format';
-import { apiBase } from '@/api/client';
+import { apiUrl } from '@/api/client';
 
 function intensityClass(h: number): string {
   if (h === 0) return 'bg-slate-100';
@@ -53,7 +53,7 @@ export default function TeamLogsPage() {
     const params = new URLSearchParams({ from, to });
     if (projectId) params.set('project', projectId);
     if (workerId) params.set('worker', workerId);
-    const url = `${apiBase}/api/v1/work-logs/export.csv?${params.toString()}`;
+    const url = apiUrl(`/api/v1/work-logs/export.csv?${params.toString()}`);
     window.open(url, '_blank');
   }
 
