@@ -96,12 +96,6 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    ports:
-      # Coolify/Traefik already owns 80+443 on the host, so we publish on
-      # 8080 by default. Override with FRONTEND_PORT=<n> if 8080 is also taken.
-      # In Coolify, point your domain at this published port via the resource's
-      # "Domains" tab (it'll inject Traefik labels).
-      - "${FRONTEND_PORT:-5173}:5173"
     environment:
       # nginx.conf substitutes this token at build time → the upstream.
       BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-http://backend:4000}
