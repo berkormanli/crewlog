@@ -1,0 +1,12 @@
+# Frontend-specific dockerignore
+.git
+.gitignore
+node_modules
+dist
+*.tsbuildinfo
+*.log
+.env
+.env.*
+!.env.example
+coverage
+.nyc_output

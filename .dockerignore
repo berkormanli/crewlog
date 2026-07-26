@@ -1,0 +1,27 @@
+# Repo-wide dockerignore — keeps build contexts tiny when you point
+# Docker/BuildKit at the project root (e.g. for docker-compose.production.yml).
+.git
+.gitignore
+.github
+.gitlab
+.pi
+.DS_Store
+.vscode
+.idea
+node_modules
+**/node_modules
+**/dist
+**/build
+**/.tsbuildinfo
+*.log
+.env
+.env.*
+!**/.env.example
+!**/.env.production.example
+README.md
+README*.md
+COOLIFY.md
+docker-compose.yml
+docker-compose.production.yml
+# We don't want the local `frontend copy` duplicate inside any context
+frontend copy/

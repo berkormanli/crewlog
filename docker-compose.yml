@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: crewlog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: crewlog
+      POSTGRES_PASSWORD: crewlog
+      POSTGRES_DB: crewlog
+    ports:
+      - "5432:5432"
+    volumes:
+      - crewlog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crewlog -d crewlog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  crewlog_pgdata:

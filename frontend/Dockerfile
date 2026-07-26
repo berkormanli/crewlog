@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1.7
+# Multi-stage build for the CrewLog Vite/React SPA.
+# Build args let the production image bake the API URL into the bundle.
+
+# ---------- 1. Build the SPA ----------
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+
+# Vite reads VITE_API_URL at build time and inlines it.
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=${VITE_API_URL}
+RUN npm run build
+
+# ---------- 2. Serve via nginx ----------
+FROM nginx:1.27-alpine AS runtime
+
+# Replace the default nginx config with our SPA + /api reverse-proxy config.
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Static assets from the Vite build (output dir is dist/ by default)
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Run as the unprivileged nginx user.
+# nginx:alpine already ships with `nginx` user; ensure permissions are sane.
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/log/nginx
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

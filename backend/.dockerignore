@@ -1,0 +1,13 @@
+# Backend-specific dockerignore
+.git
+.gitignore
+node_modules
+dist
+*.tsbuildinfo
+*.log
+.env
+.env.*
+!.env.example
+uploads/*
+!uploads/.gitkeep
+scripts/smoke.sh

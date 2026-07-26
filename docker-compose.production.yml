@@ -1,0 +1,113 @@
+# Production-oriented Compose for the full CrewLog stack.
+#
+# This is the file Coolify should consume when you choose the
+# "Docker Compose" deployment type. It brings up:
+#   - postgres   (persistent volume, healthcheck)
+#   - backend    (Fastify on :4000, internal-only)
+#   - frontend   (nginx on :80, reverse-proxies /api/* to backend)
+#
+# Networking: only the frontend exposes a port to the host/Coolify proxy.
+# The backend is reachable from the frontend over the internal crewlog_net.
+#
+# Volumes:
+#   - crewlog_pgdata  → Postgres data
+#   - crewlog_uploads → Backend file uploads (mounted at /app/uploads)
+#
+# Secrets: every secret-bearing env var is sourced from the host environment
+# via ${VAR} substitution. In Coolify, define them as "Environment Variables"
+# (or as Secrets in the UI) before deploying.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: crewlog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-crewlog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-crewlog}
+    volumes:
+      - crewlog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-crewlog} -d ${POSTGRES_DB:-crewlog}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - crewlog_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: crewlog-backend:latest
+    container_name: crewlog-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgres://${POSTGRES_USER:-crewlog}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:-crewlog}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET is required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      UPLOAD_DIR: /app/uploads
+      UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-26214400}
+      AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-10}
+      AUTH_RATE_LIMIT_WINDOW: ${AUTH_RATE_LIMIT_WINDOW:-1 minute}
+      BACKDATE_WINDOW_DAYS: ${BACKDATE_WINDOW_DAYS:-2}
+      FIREFLIES_ENABLED: ${FIREFLIES_ENABLED:-false}
+      FIREFLIES_WEBHOOK_SECRET: ${FIREFLIES_WEBHOOK_SECRET:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-stub}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+    volumes:
+      - crewlog_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    networks:
+      - crewlog_net
+    # Backend is internal-only — only the frontend (and the internal docker
+    # network) can reach it. If you need to expose it directly (e.g. for
+    # smoke tests), add a `ports:` mapping here.
+    expose:
+      - "4000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # The frontend nginx proxies /api/* to backend:4000 internally,
+        # so the SPA bundle only needs the in-cluster path.
+        VITE_API_URL: /api
+    image: crewlog-frontend:latest
+    container_name: crewlog-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    environment:
+      # nginx.conf substitutes this token at build time → the upstream.
+      BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-http://backend:4000}
+    networks:
+      - crewlog_net
+
+volumes:
+  crewlog_pgdata:
+  crewlog_uploads:
+
+networks:
+  crewlog_net:
+    driver: bridge

@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+build/
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# runtime
+backend/uploads/*
+!backend/uploads/.gitkeep
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Agent / tool state (not part of the project)
+.pi/
+
+# coverage
+coverage/
+.nyc_output/

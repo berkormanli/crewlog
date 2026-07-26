@@ -1,0 +1,263 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens — Tailwind reads these via rgb(var(--token) / <alpha-value>).
+ * Every fg/bg pair is tuned for >= 4.5:1 contrast. */
+:root {
+  --canvas: 248 250 252;
+  --surface: 255 255 255;
+  --surface-2: 248 250 252;
+  --fg: 15 23 42;
+  --muted: 71 85 105;
+  --subtle: 100 116 139;
+  --border: 226 232 240;
+  --border-strong: 203 213 225;
+
+  --success-fg: 22 101 52;
+  --success-bg: 220 252 231;
+  --success-border: 134 239 172;
+
+  --warn-fg: 133 77 14;
+  --warn-bg: 254 243 199;
+  --warn-border: 252 211 77;
+
+  --danger-fg: 153 27 27;
+  --danger-bg: 254 226 226;
+  --danger-border: 252 165 165;
+
+  --info-fg: 30 64 175;
+  --info-bg: 219 234 254;
+  --info-border: 147 197 253;
+
+  --neutral-fg: 51 65 85;
+  --neutral-bg: 241 245 249;
+  --neutral-border: 203 213 225;
+
+  --accent-fg: 30 64 175;
+  --accent-bg: 239 246 255;
+  --accent-border: 147 197 253;
+
+  --ring: 59 130 246;
+}
+
+[data-theme='dark'] {
+  --canvas: 2 6 23;
+  --surface: 15 23 42;
+  --surface-2: 2 6 23;
+  --fg: 226 232 240;
+  --muted: 148 163 184;
+  --subtle: 100 116 139;
+  --border: 30 41 59;
+  --border-strong: 51 65 85;
+
+  --success-fg: 134 239 172;
+  --success-bg: 20 83 45;
+  --success-border: 22 101 52;
+
+  --warn-fg: 252 211 77;
+  --warn-bg: 113 63 18;
+  --warn-border: 180 83 9;
+
+  --danger-fg: 252 165 165;
+  --danger-bg: 127 29 29;
+  --danger-border: 185 28 28;
+
+  --info-fg: 147 197 253;
+  --info-bg: 30 58 138;
+  --info-border: 37 99 235;
+
+  --neutral-fg: 203 213 225;
+  --neutral-bg: 30 41 59;
+  --neutral-border: 51 65 85;
+
+  --accent-fg: 147 197 253;
+  --accent-bg: 23 37 84;
+  --accent-border: 37 99 235;
+
+  --ring: 96 165 250;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-fg font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-offset-canvas;
+    --tw-ring-color: rgb(var(--ring) / 1);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium;
+    @apply transition-colors duration-150 select-none;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800;
+  }
+  .btn-secondary {
+    @apply btn bg-surface text-fg border border-border hover:bg-surface-2;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
+  }
+  .btn-ghost {
+    @apply btn text-muted hover:bg-surface-2 hover:text-fg;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+  .btn-icon {
+    @apply btn p-2 text-muted hover:bg-surface-2 hover:text-fg;
+  }
+
+  .input {
+    @apply block w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg;
+    @apply placeholder:text-subtle;
+    @apply focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/40;
+    @apply disabled:bg-surface-2 disabled:text-muted disabled:cursor-not-allowed;
+  }
+  .label {
+    @apply block text-sm font-medium text-fg mb-1.5;
+  }
+  .help {
+    @apply mt-1 text-xs text-muted;
+  }
+  .error-text {
+    @apply mt-1 text-xs text-danger-fg;
+  }
+
+  .card {
+    @apply bg-surface rounded-lg shadow-card border border-border;
+  }
+  .card-pad {
+    @apply p-5;
+  }
+  .surface-inset {
+    @apply bg-surface-2 rounded-md border border-border;
+  }
+
+  /* Badges carry meaning in both color and shape — the dot is the
+   * non-color carrier, so status is still legible to color-blind users
+   * and screen readers (the text label is also a child element). */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium;
+    @apply border;
+  }
+  .badge-gray   { @apply badge bg-neutral-bg text-neutral-fg border-neutral-border; }
+  .badge-blue   { @apply badge bg-info-bg text-info-fg border-info-border; }
+  .badge-green  { @apply badge bg-success-bg text-success-fg border-success-border; }
+  .badge-yellow { @apply badge bg-warn-bg text-warn-fg border-warn-border; }
+  .badge-red    { @apply badge bg-danger-bg text-danger-fg border-danger-border; }
+  .badge-purple { @apply badge bg-accent-bg text-accent-fg border-accent-border; }
+
+  .badge-solid-success { @apply badge bg-success-fg text-white border-success-fg; }
+  .badge-solid-warn    { @apply badge bg-warn-fg text-white border-warn-fg; }
+  .badge-solid-danger  { @apply badge bg-danger-fg text-white border-danger-fg; }
+  .badge-solid-info    { @apply badge bg-info-fg text-white border-info-fg; }
+  .badge-solid-neutral { @apply badge bg-fg text-white border-fg; }
+
+  .table-base {
+    @apply w-full text-sm tabular-nums;
+  }
+  .table-base thead th {
+    @apply text-left text-xs font-semibold uppercase tracking-wide text-muted;
+    @apply px-3 py-2 border-b border-border bg-surface-2;
+  }
+  .table-base tbody td {
+    @apply px-3 py-2 border-b border-border text-fg;
+  }
+  .table-base tbody tr:hover {
+    @apply bg-surface-2;
+  }
+
+  .skeleton {
+    @apply animate-pulse bg-surface-2 rounded-md;
+  }
+
+  .divider {
+    @apply h-px w-full bg-border;
+  }
+
+  .kbd {
+    @apply inline-flex items-center rounded border border-border bg-surface-2 px-1.5 py-0.5;
+    @apply text-[11px] font-mono text-muted;
+  }
+}
+
+.skip-link {
+  @apply sr-only focus:not-sr-only;
+  @apply fixed top-2 left-2 z-50 px-3 py-2 rounded-md;
+  @apply bg-fg text-canvas text-sm font-medium shadow-card;
+}
+
+.sidebar-link[aria-current='page'] {
+  @apply bg-accent-bg text-accent-fg font-semibold;
+}
+
+.prose-sm {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.prose-sm h1 { font-size: 1.5rem; font-weight: 700; margin: 0.8em 0 0.4em; }
+.prose-sm h2 { font-size: 1.25rem; font-weight: 700; margin: 0.8em 0 0.4em; }
+.prose-sm h3 { font-size: 1.05rem; font-weight: 600; margin: 0.6em 0 0.3em; }
+.prose-sm h4 { font-size: 0.95rem; font-weight: 600; margin: 0.6em 0 0.3em; }
+.prose-sm p  { margin: 0.4em 0 0.6em; }
+.prose-sm ul, .prose-sm ol { margin: 0.4em 0 0.6em 1.4em; }
+.prose-sm ul { list-style: disc; }
+.prose-sm ol { list-style: decimal; }
+.prose-sm li { margin: 0.2em 0; }
+.prose-sm a  { color: #2563eb; text-decoration: underline; }
+.prose-sm code {
+  background: #e2e8f0;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25em;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85em;
+}
+.prose-sm pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.8em 1em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0.6em 0;
+}
+.prose-sm pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+.prose-sm blockquote {
+  border-left: 3px solid #cbd5e1;
+  padding-left: 0.8em;
+  color: #475569;
+  margin: 0.6em 0;
+}
+.prose-sm hr { border: 0; border-top: 1px solid #e2e8f0; margin: 1em 0; }
+.prose-sm table { border-collapse: collapse; width: 100%; }
+.prose-sm th, .prose-sm td { border: 1px solid #e2e8f0; padding: 0.4em 0.6em; text-align: left; }
