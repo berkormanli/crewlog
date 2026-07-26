@@ -42,6 +42,16 @@ export async function buildServer(): Promise<FastifyInstance> {
     credentials: true,
   });
 
+  // Surface CORS misconfiguration loudly at startup — a silent empty
+  // allowlist in production means every browser request gets a CORS error
+  // and the operator only finds out from the front-end, not the logs.
+  if (config.env === 'production' && config.corsOrigins.length === 0) {
+    app.log.warn(
+      'CORS_ORIGINS is empty in production — browser requests will be rejected. ' +
+        'Set CORS_ORIGINS in docker-compose.production.yml or your orchestrator.'
+    );
+  }
+
   await app.register(multipart, {
     limits: { fileSize: config.uploads.maxBytes },
   });

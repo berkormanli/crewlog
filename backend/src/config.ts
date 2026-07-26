@@ -21,10 +21,19 @@ export const config = {
     refreshTtl: process.env.JWT_REFRESH_TTL ?? '7d',
   },
 
-  corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:5173')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean),
+  // CORS allowlist. Defaults are NODE_ENV-aware:
+  //   - development: Vite's default + common alt ports (5173/4173/5174)
+  //   - production:  intentionally empty — the deploy compose file is
+  //                  responsible for passing the right public SPA origin
+  //                  (see docker-compose.production.yml). Failing closed
+  //                  here prevents a fresh prod deployment from
+  //                  accidentally inheriting a localhost allowlist.
+  corsOrigins: (() => {
+    const isProd = (process.env.NODE_ENV ?? 'development') === 'production';
+    const raw = process.env.CORS_ORIGINS
+      ?? (isProd ? '' : 'http://localhost:5173,http://localhost:4173,http://localhost:5174');
+    return raw.split(',').map((s) => s.trim()).filter(Boolean);
+  })(),
 
   uploads: {
     dir: process.env.UPLOAD_DIR ?? './uploads',

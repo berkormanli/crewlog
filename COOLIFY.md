@@ -148,7 +148,7 @@ seed wipes & re-inserts demo data and should be a manual step.)
    | `JWT_REFRESH_SECRET` | *generated above* |
    | `JWT_ACCESS_TTL` | `15m` |
    | `JWT_REFRESH_TTL` | `7d` |
-   | `CORS_ORIGINS` | *leave blank — frontend proxies /api* |
+   | `CORS_ORIGINS` | `https://crewlog.yourdomain` — comma-separate for multiple SPA origins. Defaults to `https://crewlog.pulsarsoftwares.com` in compose; override here if you use a different host. |
    | `UPLOAD_DIR` | `/app/uploads` |
    | `UPLOAD_MAX_BYTES` | `26214400` |
    | `AUTH_RATE_LIMIT_MAX` | `10` |
@@ -238,6 +238,7 @@ main README, and confirm the Timesheet page renders.
 | Backend container exits with `DATABASE_URL is not set` | Env var missing or has a typo in the Coolify UI |
 | `pg_isready` fails forever | `POSTGRES_PASSWORD` mismatch between the DB resource and the backend's `DATABASE_URL` |
 | 401 on every API call from the SPA | `CORS_ORIGINS` set to the public hostname, but the browser is calling via the `/api` proxy — clear `CORS_ORIGINS` |
+| Browser shows `Not allowed by CORS` on every API call | `CORS_ORIGINS` is empty in production, or doesn't include the SPA's actual origin. Backend startup logs a `WARN` line if this is the case. |
 | `Bind for 0.0.0.0:80 failed: port is already allocated` on `frontend` | Coolify/Traefik already owns host port 80. Set `FRONTEND_PORT=<n>` (default is 8080) in the resource's env vars and redeploy. |
 | 502 from nginx | Backend hasn't finished booting yet, or `BACKEND_UPSTREAM` points at the wrong service name |
 | Nginx crash-loops with `host not found in upstream "BACKEND_UPSTREAM"` | Either (a) `BACKEND_UPSTREAM` is unset, or (b) the value includes an `http://` scheme — it must be `host:port` only, since the nginx template substitutes it into a `server` directive |
