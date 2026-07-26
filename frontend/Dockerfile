@@ -9,8 +9,14 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
 
-# Vite reads VITE_API_URL at build time and inlines it.
-ARG VITE_API_URL=/api
+# VITE_API_URL is the *origin* the SPA calls the API at — NOT a path prefix.
+# Leave it empty so URLs stay first-party-relative (`/api/v1/...`) and the
+# nginx `/api/` location proxies them to the backend. In dev, set it to
+# `http://localhost:4000` (see frontend/.env.example) so the SPA can call the
+# backend directly while Vite serves the bundle. NEVER set this to `/api` —
+# the call sites already include the `/api/v1/...` path, so a `/api` prefix
+# would double up to `/api/api/v1/...` and miss the backend.
+ARG VITE_API_URL=
 ENV VITE_API_URL=${VITE_API_URL}
 RUN npm run build
 

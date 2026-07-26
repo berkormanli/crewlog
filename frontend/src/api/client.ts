@@ -1,6 +1,11 @@
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/auth';
 
+// BASE is the *origin* the SPA calls the API at — the path prefix is
+// already part of every call site (e.g. `/api/v1/auth/login`). Setting
+// VITE_API_URL to a path like `/api` would produce `/api/api/v1/auth/login`
+// and miss the backend. Leave it empty in production so the bundle uses
+// first-party-relative URLs and nginx's `/api/` location can proxy them.
 const BASE = import.meta.env.VITE_API_URL || '';
 
 export class ApiException extends Error {

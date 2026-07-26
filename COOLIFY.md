@@ -178,8 +178,12 @@ seed wipes & re-inserts demo data and should be a manual step.)
 4. **Port Exposed**: `80` (container port). Coolify will map it to 80/443
    on the host.
 5. **Build Arguments**:
-   - `VITE_API_URL=/api` (the SPA only needs the in-cluster path; nginx
-     proxies `/api/*` to the backend service).
+   - `VITE_API_URL` — leave **empty**. The SPA uses first-party-relative
+     URLs (`/api/v1/...`) and nginx's `/api/` location proxies them to the
+     backend. **Do not set this to `/api`** — the call paths already start
+     with `/api/v1/...`, so a `/api` prefix would produce `/api/api/v1/...`
+     and miss the backend. Set it only if you intentionally want the SPA
+     to call a backend hosted on a different origin (e.g. a staging API).
 6. **Environment Variables**:
    - `BACKEND_UPSTREAM=crewlog-backend:4000` (Coolify internal DNS,
      matching the resource name you picked in B2 — adjust if you renamed
