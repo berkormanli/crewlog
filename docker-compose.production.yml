@@ -57,11 +57,11 @@ services:
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
       # Comma-separated list of browser origins allowed to call this API.
-# Default is the public SPA origin — the SPA talks to the backend cross-origin
-# (separate host). Override here or via the orchestrator's env vars if you
-# front the backend with multiple SPA hosts (e.g. www + staging). Leave empty
-# to allow no browser origins (server-to-server / curl only).
-CORS_ORIGINS: ${CORS_ORIGINS:-https://crewlog.pulsarsoftwares.com}
+      # Default is the public SPA origin — the SPA talks to the backend cross-origin
+      # (separate host). Override here or via the orchestrator's env vars if you
+      # front the backend with multiple SPA hosts (e.g. www + staging). Leave empty
+      # to allow no browser origins (server-to-server / curl only).
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://crewlog.pulsarsoftwares.com}
       UPLOAD_DIR: /app/uploads
       UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-26214400}
       AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-10}
@@ -92,7 +92,13 @@ CORS_ORIGINS: ${CORS_ORIGINS:-https://crewlog.pulsarsoftwares.com}
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-}
+        # VITE_API_URL is baked into the SPA at build time. Defaults to the
+        # cross-origin backend host. To revert to same-origin (SPA + nginx
+        # proxies /api), set VITE_API_URL= (empty) in the orchestrator.
+        # NEVER set this to `/api` — call paths already start with
+        # `/api/v1/...`, so a `/api` prefix produces `/api/api/v1/...`
+        # and misses the backend.
+        VITE_API_URL: ${VITE_API_URL:-https://crewlogbackend.pulsarsoftwares.com}
     image: crewlog-frontend:latest
     container_name: crewlog-frontend
     restart: unless-stopped
