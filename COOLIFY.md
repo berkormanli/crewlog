@@ -76,6 +76,13 @@ openssl rand -hex 32      # → FIREFLIES_WEBHOOK_SECRET
 7. Click **Deploy**. Watch the build log. The first build compiles the
    Vite SPA and the Fastify backend, then boots all three containers.
 
+> ⚠️ **Port 80 collision.** Coolify's Traefik reverse proxy already binds
+> 80/443 on the host, so the compose file publishes the frontend on
+> `8080:80` by default. When you set a Domain in the Coolify UI, it
+> routes your hostname to that published port automatically. If 8080 is
+> also taken on your host, set `FRONTEND_PORT=<other-port>` in the env
+> vars and redeploy.
+
 ### First-time database setup
 
 The compose stack does **not** run migrations automatically. After the first
@@ -226,6 +233,7 @@ main README, and confirm the Timesheet page renders.
 | Backend container exits with `DATABASE_URL is not set` | Env var missing or has a typo in the Coolify UI |
 | `pg_isready` fails forever | `POSTGRES_PASSWORD` mismatch between the DB resource and the backend's `DATABASE_URL` |
 | 401 on every API call from the SPA | `CORS_ORIGINS` set to the public hostname, but the browser is calling via the `/api` proxy — clear `CORS_ORIGINS` |
+| `Bind for 0.0.0.0:80 failed: port is already allocated` on `frontend` | Coolify/Traefik already owns host port 80. Set `FRONTEND_PORT=<n>` (default is 8080) in the resource's env vars and redeploy. |
 | 502 from nginx | Backend hasn't finished booting yet, or `BACKEND_UPSTREAM` points at the wrong service name |
 | Upload returns 413 | `UPLOAD_MAX_BYTES` too low or `client_max_body_size` in `frontend/nginx.conf` too small (default 32M) |
 | Migrations ran twice / conflict | Safe to ignore — Knex records applied migrations in `knex_migrations` |
