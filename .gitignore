@@ -28,6 +28,9 @@ npm-debug.log*
 # Agent / tool state (not part of the project)
 .pi/
 
+# Duplicate / scratch folders
+frontend copy/
+
 # coverage
 coverage/
 .nyc_output/
