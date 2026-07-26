@@ -86,16 +86,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        # VITE_API_URL is the API *origin* (no path prefix). The SPA bundle
-        # uses first-party-relative URLs (`/api/v1/...`) which the frontend
-        # nginx proxies to the backend. Leaving it empty keeps the browser
-        # on the same origin as the SPA — no CORS, no cookie weirdness.
-        # Override only if you intentionally want the SPA to call a backend
-        # on a different host (e.g. a staging API). NEVER set this to `/api`
-        # — paths already start with `/api/v1/...`, so a `/api` prefix would
-        # produce `/api/api/v1/...` and miss the backend.
-        VITE_API_URL:
+      env:
+        VITE_API_URL: ${VITE_API_URL:-}
     image: crewlog-frontend:latest
     container_name: crewlog-frontend
     restart: unless-stopped
