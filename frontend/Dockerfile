@@ -17,9 +17,11 @@ RUN npm run build
 # ---------- 2. Serve via nginx ----------
 FROM nginx:1.27-alpine AS runtime
 
-# Replace the default nginx config with our SPA + /api reverse-proxy config.
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Drop our SPA + /api reverse-proxy config into the official nginx image's
+# templates directory. The image's entrypoint runs envsubst on
+# /etc/nginx/templates/*.template at startup, expanding ${BACKEND_UPSTREAM}
+# into the rendered /etc/nginx/conf.d/default.conf before nginx is launched.
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Static assets from the Vite build (output dir is dist/ by default)
 COPY --from=build /app/dist /usr/share/nginx/html

@@ -181,15 +181,16 @@ seed wipes & re-inserts demo data and should be a manual step.)
    - `VITE_API_URL=/api` (the SPA only needs the in-cluster path; nginx
      proxies `/api/*` to the backend service).
 6. **Environment Variables**:
-   - `BACKEND_UPSTREAM=http://crewlog-backend:4000` (Coolify internal DNS,
+   - `BACKEND_UPSTREAM=crewlog-backend:4000` (Coolify internal DNS,
      matching the resource name you picked in B2 — adjust if you renamed
-     it).
+     it). Must be `host:port` with **no scheme** — the nginx `server`
+     directive inside `upstream` blocks rejects URLs.
 7. **Domains**: add `crewlog.yourdomain`, enable Let's Encrypt.
 8. Deploy.
 
 > The internal hostname Coolify picks depends on the resource name you
 > chose. If you called the backend resource `crewlog-api` instead, set
-> `BACKEND_UPSTREAM=http://crewlog-api:4000`.
+> `BACKEND_UPSTREAM=crewlog-api:4000`.
 
 ---
 
@@ -235,6 +236,7 @@ main README, and confirm the Timesheet page renders.
 | 401 on every API call from the SPA | `CORS_ORIGINS` set to the public hostname, but the browser is calling via the `/api` proxy — clear `CORS_ORIGINS` |
 | `Bind for 0.0.0.0:80 failed: port is already allocated` on `frontend` | Coolify/Traefik already owns host port 80. Set `FRONTEND_PORT=<n>` (default is 8080) in the resource's env vars and redeploy. |
 | 502 from nginx | Backend hasn't finished booting yet, or `BACKEND_UPSTREAM` points at the wrong service name |
+| Nginx crash-loops with `host not found in upstream "BACKEND_UPSTREAM"` | Either (a) `BACKEND_UPSTREAM` is unset, or (b) the value includes an `http://` scheme — it must be `host:port` only, since the nginx template substitutes it into a `server` directive |
 | Upload returns 413 | `UPLOAD_MAX_BYTES` too low or `client_max_body_size` in `frontend/nginx.conf` too small (default 32M) |
 | Migrations ran twice / conflict | Safe to ignore — Knex records applied migrations in `knex_migrations` |
 
