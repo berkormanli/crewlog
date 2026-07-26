@@ -101,7 +101,7 @@ services:
       # 8080 by default. Override with FRONTEND_PORT=<n> if 8080 is also taken.
       # In Coolify, point your domain at this published port via the resource's
       # "Domains" tab (it'll inject Traefik labels).
-      - "${FRONTEND_PORT:-8080}:80"
+      - "${FRONTEND_PORT:-5173}:5173"
     environment:
       # nginx.conf substitutes this token at build time → the upstream.
       BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-http://backend:4000}
