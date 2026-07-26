@@ -98,7 +98,7 @@ services:
         # NEVER set this to `/api` — call paths already start with
         # `/api/v1/...`, so a `/api` prefix produces `/api/api/v1/...`
         # and misses the backend.
-        VITE_API_URL: ${VITE_API_URL:-https://crewlogbackend.pulsarsoftwares.com}
+        VITE_API_URL: ${VITE_API_URL-}
     image: crewlog-frontend:latest
     container_name: crewlog-frontend
     restart: unless-stopped
@@ -110,7 +110,7 @@ services:
       # IMPORTANT: must be host[:port] with NO scheme (the `server` directive
       # inside an `upstream` block rejects URLs).
       BACKEND_UPSTREAM: ${BACKEND_UPSTREAM:-backend:4000}
-      VITE_API_URL: ${VITE_API_URL:-}
+      VITE_API_URL: ${VITE_API_URL-}
     networks:
       - crewlog_net
 
